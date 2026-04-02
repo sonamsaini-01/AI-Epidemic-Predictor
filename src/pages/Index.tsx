@@ -65,9 +65,24 @@ const Index = () => {
         {/* Input Section */}
         <Card className="border-border/50 bg-card/80 backdrop-blur-sm animate-fade-in">
           <CardContent className="flex flex-col sm:flex-row items-end gap-4 p-6">
+            <div className="w-full sm:w-48">
+              <label htmlFor="region" className="text-sm font-medium text-muted-foreground mb-2 block">
+                Region
+              </label>
+              <Select value={region} onValueChange={setRegion}>
+                <SelectTrigger className="bg-background/50">
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIONS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex-1 w-full">
               <label htmlFor="days" className="text-sm font-medium text-muted-foreground mb-2 block">
-                Enter number of days
+                Number of days
               </label>
               <Input
                 id="days"
