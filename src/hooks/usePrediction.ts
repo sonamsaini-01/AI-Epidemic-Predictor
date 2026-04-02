@@ -24,7 +24,7 @@ export function usePrediction() {
     history: [],
   });
 
-  const predict = useCallback(async (day: number) => {
+  const predict = useCallback(async (day: number, region: string) => {
     if (!Number.isInteger(day) || day < 1 || day > 1000) {
       setState((s) => ({ ...s, error: "Please enter a valid day (1–1000)." }));
       return;
@@ -36,7 +36,7 @@ export function usePrediction() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
-      const res = await fetch(`${API_BASE}/predict?day=${day}`, {
+      const res = await fetch(`${API_BASE}/predict?day=${day}&region=${encodeURIComponent(region)}`, {
         signal: controller.signal,
         headers: { "ngrok-skip-browser-warning": "true" },
       });
