@@ -53,6 +53,7 @@ export function usePrediction() {
         ...s,
         prediction,
         day,
+        region,
         chartData,
         isLoading: false,
         history: [...s.history.filter((h) => h.day !== day), { day, cases: prediction }].sort((a, b) => a.day - b.day),
