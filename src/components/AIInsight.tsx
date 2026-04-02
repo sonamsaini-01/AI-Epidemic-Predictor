@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface AIInsightProps {
   prediction: number;
   day: number;
+  region: string;
 }
 
-export function AIInsight({ prediction, day }: AIInsightProps) {
-  const risk = classifyRisk(prediction);
-  const insight = getAIInsight(risk, prediction, day);
+export function AIInsight({ prediction, day, region }: AIInsightProps) {
+  const risk = classifyRisk(prediction, region);
+  const insight = getAIInsight(risk, prediction, day, region);
 
   return (
     <Card className="animate-fade-in border-border/50 bg-card/80 backdrop-blur-sm">

@@ -3,6 +3,7 @@ import { Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 
 interface RiskIndicatorProps {
   prediction: number;
+  region: string;
 }
 
 const icons: Record<RiskLevel, React.ElementType> = {
@@ -11,8 +12,8 @@ const icons: Record<RiskLevel, React.ElementType> = {
   high: ShieldAlert,
 };
 
-export function RiskIndicator({ prediction }: RiskIndicatorProps) {
-  const risk = classifyRisk(prediction);
+export function RiskIndicator({ prediction, region }: RiskIndicatorProps) {
+  const risk = classifyRisk(prediction, region);
   const colors = getRiskColor(risk);
   const label = getRiskLabel(risk);
   const Icon = icons[risk];

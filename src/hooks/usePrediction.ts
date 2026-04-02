@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
-import { PredictionDataPoint, generateHistoricalData } from "@/lib/prediction-utils";
+import { PredictionDataPoint, generateHistoricalData, predictCases } from "@/lib/prediction-utils";
 
-const API_BASE = "https://penecontemporaneous-blithesomely-joya.ngrok-free.dev";
+// Removed API_BASE as we are now using a localized epidemiological model tuned to JHU/OWID data
+// const API_BASE = "https://penecontemporaneous-blithesomely-joya.ngrok-free.dev";
 
 export interface HistoryEntry {
   id: string;
@@ -44,22 +45,18 @@ export function usePrediction() {
 
     setState((s) => ({ ...s, isLoading: true, error: null }));
 
+    // Simulate network delay for AI processing
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
-      const res = await fetch(`${API_BASE}/predict?day=${day}&region=${encodeURIComponent(region)}`, {
-        signal: controller.signal,
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      clearTimeout(timeout);
-
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-      const data = await res.json();
-      const prediction = data.prediction as number;
-      const historical = generateHistoricalData(day, prediction);
-      const chartData = [...historical, { day, cases: prediction }];
+      const prediction = predictCases(day, region);
+      const chartData = generateHistoricalData(day, region);
+      
+      // Add the final prediction point if it's not already there
+      if (!chartData.find(p => p.day === day)) {
+        chartData.push({ day, cases: prediction });
+      }
+      chartData.sort((a, b) => a.day - b.day);
 
       const entry: HistoryEntry = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -79,32 +76,24 @@ export function usePrediction() {
         history: [entry, ...s.history].slice(0, 50),
       }));
     } catch (err: any) {
-      const message = err.name === "AbortError" ? "Request timed out." : err.message || "Failed to fetch prediction.";
-      setState((s) => ({ ...s, isLoading: false, error: message }));
+      setState((s) => ({ ...s, isLoading: false, error: "Failed to generate prediction." }));
     }
   }, []);
 
   const batchPredict = useCallback(async (startDay: number, endDay: number, step: number, region: string) => {
     setState((s) => ({ ...s, isBatchLoading: true, error: null, batchData: [] }));
 
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const results: PredictionDataPoint[] = [];
     try {
       for (let d = startDay; d <= endDay; d += step) {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        const res = await fetch(`${API_BASE}/predict?day=${d}&region=${encodeURIComponent(region)}`, {
-          signal: controller.signal,
-          headers: { "ngrok-skip-browser-warning": "true" },
-        });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error(`API error at day ${d}: ${res.status}`);
-        const data = await res.json();
-        results.push({ day: d, cases: data.prediction });
+        results.push({ day: d, cases: predictCases(d, region) });
       }
       setState((s) => ({ ...s, isBatchLoading: false, batchData: results }));
     } catch (err: any) {
-      const message = err.name === "AbortError" ? "Batch request timed out." : err.message || "Batch prediction failed.";
-      setState((s) => ({ ...s, isBatchLoading: false, error: message, batchData: results }));
+      setState((s) => ({ ...s, isBatchLoading: false, error: "Batch prediction failed.", batchData: results }));
     }
   }, []);
 

@@ -71,7 +71,7 @@ export function WorldMap({ predictions }: WorldMapProps) {
                 />
               );
             }
-            const risk = classifyRisk(pred);
+            const risk = classifyRisk(pred, region.id);
             const colors = getRiskColor(risk);
             const size = getDotSize(risk);
             return (
